@@ -2,8 +2,12 @@ import logging
 from openai import OpenAI
 from google import genai
 from google.genai import types
+from typing import List
+
+from app.enums.status import Status
 from app.core.config import OPENAI_API_KEY, OPENAI_MODEL, GEMINI_API_KEY
 from app.schemas.report import ReportRequest
+from app.schemas.reports_in_batch import *
 
 
 logger = logging.getLogger('LOGGER_NAME')
@@ -40,7 +44,7 @@ class AIReport():
         try:
             prompt = self.get_default_prompt(data)
 
-            response = self.request_open_ai(prompt)
+            response = self.request_gemini(prompt)
 
             return response
         except Exception as e:
@@ -49,9 +53,8 @@ class AIReport():
             return ''
 
 
-    def get_default_prompt(self, data: ReportRequest) -> str:
-        prompt = f"""Você é um psicólogo que vai redigir relatórios clínicos semanais.
-            
+    def get_default_prompt(self, data: PatientPayload) -> str:
+        prompt = f"""
             Elabore um relatório terapêutico no modelo TIP (Treino de Independência Pessoal), com linguagem técnica, clara e objetiva, organizado nos seguintes tópicos:
 
             Com base nas anotações que vou te passar, gere um relatório com:
@@ -82,8 +85,49 @@ class AIReport():
             Utilizar linguagem profissional voltada para contexto clínico terapêutico.
 
             Anotações:
-            paciente: {data.patient_name}
-            {data.notes}
+            paciente: {data.nome}
+            {data.anotacao}
         """
 
         return prompt
+
+
+    def generate_report_in_batch(self, data: ReportsInBatchRequest) -> ReportsInBatchResponse:
+        resultados: List[ReportInBatchResponse] = []
+
+        for paciente in data.pacientes:
+            try:
+                prompt_final = self.build_prompt(paciente, data.prompt)
+                relatorio = self.request_gemini(prompt_final)
+
+                resultados.append(
+                    ReportInBatchResponse(
+                        nome=paciente.nome,
+                        relatorio=relatorio,
+                        status=Status.GERADO,
+                    )
+                )
+
+            except Exception as e:
+                resultados.append(
+                    ReportInBatchResponse(
+                        nome=paciente.nome,
+                        status=Status.ERRO,
+                        erro=str(e),
+                    )
+                )
+
+        return ReportsInBatchResponse(resultados=resultados)
+
+
+    def build_prompt(self, data: PatientPayload, prompt: str) -> str:
+        if not prompt:
+            return self.get_default_prompt(data)
+
+        prompt_final = f"""{prompt}
+            PACIENTE: {data.nome}
+            ANOTAÇÕES:
+            {data.anotacao}
+        """
+
+        return prompt_final

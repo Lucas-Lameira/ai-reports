@@ -1,8 +1,18 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.routes.reports import router
 
-app = FastAPI(title="AI Reports API")
+app = FastAPI(title='AI Reports API')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:3000'], # TODO: ADD PRODUCTION URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(
     router,
@@ -10,12 +20,11 @@ app.include_router(
     tags=["Reports"]
 )
 
-
 if __name__ == "__main__":
     uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
+        'app.main:app',
+        host='0.0.0.0',
         port=8081,
         reload=False,
-        log_level="debug"
+        log_level='debug'
     )
