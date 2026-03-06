@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.schemas.report import *
 from app.schemas.reports_in_batch import *
 from app.services.ai_report_service import AIReport
+from app.services.ai_report_batch_service import AIReportInBatch
 
 router = APIRouter()
 
@@ -25,6 +26,7 @@ def create_report(data: ReportRequest):
 
 @router.post('/relatorios/batch', response_model=ReportsInBatchResponse)
 def generate_reports_batch(payload: ReportsInBatchRequest):
+    # _service = AIReportInBatch()
     _service = AIReport()
 
     return _service.generate_report_in_batch(payload)
