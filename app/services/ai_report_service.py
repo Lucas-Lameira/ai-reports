@@ -30,7 +30,7 @@ class AIReport():
 
     def request_gemini(self, prompt: str):
         response = self.gemini_api_client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash",
             config=types.GenerateContentConfig(
                 system_instruction="Você é um psicólogo que vai redigir relatórios clínicos semanais."
             ),
@@ -38,7 +38,7 @@ class AIReport():
         )
 
         return response.text
-    
+
 
     def generate_report(self, data: ReportRequest) -> str:
         try:
