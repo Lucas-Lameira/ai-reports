@@ -1,11 +1,10 @@
 import logging
-from openai import OpenAI
 from google import genai
 from google.genai import types
 from typing import List
 
 from app.enums.status import Status
-from app.core.config import OPENAI_API_KEY, OPENAI_MODEL, GEMINI_API_KEY
+from app.core.config import GEMINI_API_KEY
 from app.schemas.report import ReportRequest
 from app.schemas.reports_in_batch import *
 
@@ -15,18 +14,7 @@ logger = logging.getLogger('LOGGER_NAME')
 
 class AIReport():
     def __init__(self):
-        self.open_ai_client = OpenAI(api_key=OPENAI_API_KEY)
         self.gemini_api_client = genai.Client(api_key=GEMINI_API_KEY) 
-
-    def request_open_ai(self, prompt: str) -> str:
-        response = self.open_ai_client.responses.create(
-            model=OPENAI_MODEL,
-            input=prompt,
-            temperature=0.2
-        )
-
-        return response.output_text
-
 
     def request_gemini(self, prompt: str):
         response = self.gemini_api_client.models.generate_content(
