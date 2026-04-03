@@ -1,10 +1,10 @@
-from app.schemas.reports_in_batch import PatientPayload
+from app.schemas.batch.request_model import User
 
 def join_notes(notes: list[str]) -> str:
     return " ".join(notes)
 
 
-def build_default_prompt(data: PatientPayload) -> str:
+def build_default_prompt(data: User) -> str:
     prompt = f"""Com base nas anotações abaixo, gere um relatório com:
         - Queixa principal
         - Evolução na semana
