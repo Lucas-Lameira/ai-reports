@@ -208,3 +208,6 @@ __marimo__/
 
 # Vscode
 .vscode
+
+# Data
+data/jobs/*.json

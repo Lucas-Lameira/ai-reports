@@ -6,7 +6,8 @@ from typing import List
 from app.enums.status import Status
 from app.core.config import GEMINI_API_KEY
 from app.schemas.report import ReportRequest
-from app.schemas.reports_in_batch import *
+from app.schemas.batch.request_model import User, ReportsInBatchRequest
+from app.schemas.batch.response_model import ReportInBatchResponse
 
 
 logger = logging.getLogger('LOGGER_NAME')
@@ -41,7 +42,7 @@ class AIReport():
             return ''
 
 
-    def get_default_prompt(self, data: PatientPayload) -> str:
+    def get_default_prompt(self, data: User) -> str:
         prompt = f"""
             Elabore um relatório terapêutico no modelo TIP (Treino de Independência Pessoal), com linguagem técnica, clara e objetiva, organizado nos seguintes tópicos:
 
@@ -80,7 +81,7 @@ class AIReport():
         return prompt
 
 
-    def generate_report_in_batch(self, data: ReportsInBatchRequest) -> ReportsInBatchResponse:
+    def generate_report_in_batch(self, data: ReportsInBatchRequest) -> ReportInBatchResponse:
         resultados: List[ReportInBatchResponse] = []
 
         for paciente in data.pacientes:
@@ -99,16 +100,16 @@ class AIReport():
             except Exception as e:
                 resultados.append(
                     ReportInBatchResponse(
-                        nome=paciente.nome,
+                        name=paciente.nome,
                         status=Status.ERRO,
-                        erro=str(e),
+                        error=str(e),
                     )
                 )
 
-        return ReportsInBatchResponse(resultados=resultados)
+        return ReportInBatchResponse(resultados=resultados)
 
 
-    def build_prompt(self, data: PatientPayload, prompt: str) -> str:
+    def build_prompt(self, data: User, prompt: str) -> str:
         if not prompt:
             return self.get_default_prompt(data)
 

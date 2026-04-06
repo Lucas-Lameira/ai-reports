@@ -1,13 +1,11 @@
-# from google import genai
-# from app.core.config import GEMINI_API_KEY
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from app.schemas.report import *
-from app.schemas.reports_in_batch import *
+from app.schemas.batch.request_model import ReportsInBatchRequest
+from app.schemas.batch.response_model import BatchJobCreatedResponse, BatchJobStatusResponse, ReportInBatchResponse
 from app.services.ai_report_service import AIReport
 from app.services.ai_report_batch_service import AIReportInBatch
 
 router = APIRouter()
-# GEMINI_API_CLIENT =  genai.Client(api_key=GEMINI_API_KEY) 
 
 @router.get('/')
 def root():
@@ -31,9 +29,14 @@ def create_report(data: ReportRequest):
     )
 
 
-@router.post('/relatorios/batch', response_model=ReportsInBatchResponse)
-def generate_reports_batch(payload: ReportsInBatchRequest):
-    # _service = AIReportInBatch()
-    _service = AIReport()
 
-    return _service.generate_report_in_batch(payload)
+@router.post('/batch', response_model=BatchJobCreatedResponse)
+def generate_reports_batch(payload: ReportsInBatchRequest, background_tasks: BackgroundTasks):
+    _service = AIReportInBatch()
+    return _service.start_batch_job(payload, background_tasks)
+
+
+@router.get('/batch/status', response_model=BatchJobStatusResponse)
+def get_batch_status(job_id: str):
+    _service = AIReportInBatch()
+    return _service.get_batch_job_status(job_id)
